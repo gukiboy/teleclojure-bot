@@ -1,0 +1,1 @@
+{:deps {morse {:mvn/version "0.4.3"}}}
