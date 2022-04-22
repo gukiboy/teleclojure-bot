@@ -37,11 +37,6 @@
                                (log/info :form-evaluation {:form form
                                                            :evaluation evaluation})
                                (t/send-text token id (format-response form evaluation)))
-                             #_(catch RuntimeException rte
-                                 (let [cause (Throwable->map rte)]
-                                   (log/error :error-on-form-evaluation {:form form
-                                                                         :cause cause})
-                                   (t/send-text token id (format-response form cause))))
                              (catch Exception ex
                                (do (log/error :error ex)
                                    (t/send-text token id (format-response form (:cause (Throwable->map ex)))))))))))
