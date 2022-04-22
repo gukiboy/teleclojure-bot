@@ -1,7 +1,9 @@
 (ns core
   (:require [morse.handlers :as h]
             [morse.api :as t]
-            [morse.polling :as p]))
+            [morse.polling :as p]
+            [io.pedestal.log :as log]
+            [clojure.string :as str]))
 
 (def ^:private token "")
 
@@ -25,29 +27,31 @@
   (h/command "help" {{id :id :as chat} :chat}
              (println "Help was requested in " chat)
              (t/send-text token id "Help is on the way"))
-  (h/inline-fn (fn [inline]
-                 (try (let [form (:query inline)
-                            evaluation (load-string form)
-                            message-content (format-response form evaluation)
-                            inline-response (answer-inline {:title form
-                                                            :message_text (print-str evaluation)
-                                                            :input_message_content message-content})]
-                        (clojure.pprint/pprint form)
-                        (clojure.pprint/pprint inline-response)
-                        (clojure.pprint/pprint (t/answer-inline token (:id inline) (:options inline) inline-response)))
-                      (catch RuntimeException rte
-                        (t/answer-inline token (:id inline) (:options inline)
-                                         (let [form (:query inline)
-                                               title form
-                                               cause (:cause (Throwable->map rte))]
-                                           (clojure.pprint/pprint (answer-inline {:title title
-                                                                                  :message_text cause
-                                                                                  :input_message_content (format-response title cause)})))))
-                      (catch Exception ex (.printStackTrace ex))))))
+  (h/command-fn "eval" (fn [{:keys [chat text] :as msg}]
+                         (let [id (:id chat)
+                               form (subs text 6)]
+                           (log/info :form-evaluation-request {:form form})
+                           (try
+                             (let [evaluation (load-string form)
+                                   message-content (format-response form evaluation)]
+                               (log/info :form-evaluation {:form form
+                                                           :evaluation evaluation})
+                               (t/send-text token id (format-response form evaluation)))
+                             #_(catch RuntimeException rte
+                                 (let [cause (Throwable->map rte)]
+                                   (log/error :error-on-form-evaluation {:form form
+                                                                         :cause cause})
+                                   (t/send-text token id (format-response form cause))))
+                             (catch Exception ex
+                               (do (log/error :error ex)
+                                   (t/send-text token id (format-response form (:cause (Throwable->map ex)))))))))))
 
 (comment
   (def sesh (p/start token teleclojure-bot))
   (p/stop sesh)
+
+  (read-string "\"tewse\"")
+  (read-string "{:banana “teste” :maca “fruta”}")
 
   (try (load-string ")")
        (catch Exception ex (:cause (Throwable->map ex)))))

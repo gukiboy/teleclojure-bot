@@ -1,1 +1,6 @@
-{:deps {morse {:mvn/version "0.4.3"}}}
+{:paths ["src"]
+ :deps {morse {:mvn/version "0.4.3"}
+           io.pedestal/pedestal.service                  {:mvn/version "0.5.8"}
+           io.pedestal/pedestal.jetty                    {:mvn/version "0.5.8"}
+           ch.qos.logback/logback-classic                {:mvn/version "1.2.3"}
+        io.pedestal/pedestal.log {:mvn/version "0.5.10"}}}
