@@ -25,7 +25,7 @@
   (h/command "help" {{id :id :as chat} :chat}
              (println "Help was requested in " chat)
              (t/send-text token id "Help is on the way"))
-  (h/inline-fn (fn [inline] 
+  (h/inline-fn (fn [inline]
                  (try (let [form (:query inline)
                             evaluation (load-string form)
                             message-content (format-response form evaluation)
@@ -40,8 +40,9 @@
                                          (let [form (:query inline)
                                                title form
                                                cause (:cause (Throwable->map rte))]
-                                           (clojure.pprint/pprint (answer-inline {:title title                                                           :message_text cause
-                                                           :input_message_content (format-response title cause)})))))
+                                           (clojure.pprint/pprint (answer-inline {:title title
+                                                                                  :message_text cause
+                                                                                  :input_message_content (format-response title cause)})))))
                       (catch Exception ex (.printStackTrace ex))))))
 
 (comment
