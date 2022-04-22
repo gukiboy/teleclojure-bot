@@ -18,7 +18,7 @@
 
 (defn format-response
   [form evaluation]
-  (print-str "```" form "```\n"
+  (print-str "```; eval:" form "```\n"
              "`" evaluation "`"))
 
 (h/defhandler teleclojure-bot
@@ -36,10 +36,11 @@
                                    message-content (format-response form evaluation)]
                                (log/info :form-evaluation {:form form
                                                            :evaluation evaluation})
-                               (t/send-text token id (format-response form evaluation)))
+                               (t/send-text token id {:parse_mode "Markdown"} (str "✅\n" message-content)))
                              (catch Exception ex
                                (do (log/error :error ex)
-                                   (t/send-text token id (format-response form (:cause (Throwable->map ex)))))))))))
+                                   (t/send-text token id {:parse_mode "Markdown"}
+                                                (str "❌\n" (format-response form (:cause (Throwable->map ex))))))))))))
 
 (comment
   (def sesh (p/start token teleclojure-bot))
