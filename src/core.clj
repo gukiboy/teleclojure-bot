@@ -5,7 +5,7 @@
             [io.pedestal.log :as log]
             [clojure.string :as str]))
 
-(def ^:private token "")
+(def ^:private token (subs (slurp "token") 0 46))
 
 (defn answer-inline
   [{:keys [title message_text input_message_content]}]
